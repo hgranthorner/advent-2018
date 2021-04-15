@@ -8,6 +8,13 @@ Guards = dict[int, dict[time, int]]
 GuardsWithSleepAmount = list[tuple[int, dict[int, dict[time, int]]]]
 
 
+@dataclass
+class GuardSleepAmount:
+    id: int
+    amount: int
+    minute: time
+
+
 @dataclass(order=True)
 class Line:
     timestamp: datetime
@@ -105,10 +112,36 @@ def part_one(lines: list[str]):
     return (minute, guard_id)
 
 
+def calc_guards_with_minute_and_amount(guard_data: Guards):
+    result: list[GuardSleepAmount] = []
+    default_value = (time(0, 0, 0), 0)
+    for id, times in guard_data.items():
+        most_slept = max(list(times.items()),
+                         key=lambda t: t[1], default=default_value)
+        print(most_slept)
+        result.append(GuardSleepAmount(id, most_slept[1], most_slept[0]))
+
+    return result
+
+
+def part_two(lines: list[str]):
+    ordered = order_input(lines)
+    guard_data = parse_remainder(ordered)
+    guards_with_minute_and_amount = calc_guards_with_minute_and_amount(
+        guard_data)
+    default_value = GuardSleepAmount(0, 0, time(0, 0, 0))
+    return max(guards_with_minute_and_amount,
+               key=lambda x: x.amount, default=default_value)
+
+
 if __name__ == '__main__':
     file_name = 'input.txt'
     try:
         with open(file_name) as f:
-            pprint(part_one(f.readlines()))
+            lines = f.readlines()
+            print('Part One:')
+            pprint(part_one(lines))
+            print('Part Two:')
+            pprint(part_two(lines))
     except FileNotFoundError:
         print(f'Could not find {file_name}')
