@@ -1,7 +1,6 @@
 
 def annihilate(x: str, y: str):
     # Same chem, same polarity?
-    # print(x, y)
     if x == y:
         return False
 
@@ -21,7 +20,6 @@ def part_one(input: str):
         if len(chems) == 0:
             return ''
 
-        # print(chems)
         # treat as stack: push smallest, then largest
         set_to_remove = set()
         for i, c in enumerate(chems):
@@ -48,8 +46,15 @@ if __name__ == '__main__':
     try:
         with open(file_name) as f:
             data = f.readline()
-            result = part_one(data)
-            print(len(result))
-            # # print(part_two(data))
+            # result = part_one(data)
+            # print(len(result))
+            char_set = set(data.lower())
+
+            lst: list[int] = []
+            for c in char_set:
+                print(c)
+                input = data.replace(c, '').replace(c.upper(), '')
+                lst.append(len(part_one(input)))
+            print(min(lst))
     except FileNotFoundError:
         print(f'cannot find file {file_name}')
