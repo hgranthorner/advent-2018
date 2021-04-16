@@ -9,7 +9,7 @@ class Point:
     x: int
     y: int
 
-    def distance(self, other):
+    def distance(self, other) -> int:
         return abs(self.x - other.x) + abs(self.y - other.y)
 
 
@@ -51,7 +51,7 @@ def generate_points(pd: PointDict):
     keys = pd.keys()
     (top, left, bottom, right) = get_edges(keys)
     return [
-        PointMap(x, y)
+        Point(x, y)
         for x, y
         in product(range(top, bottom + 1), range(left + 1, right + 2))
     ]
@@ -88,7 +88,7 @@ def get_edge_owners(ps: list[PointMap]) -> set[Point]:
 
 def part_one(input: list[str]):
     points: PointDict = {p: set() for p in parse_points(input)}
-    all_points = generate_points(points)
+    all_points = [PointMap(p.x, p.y) for p in generate_points(points)]
     for point in points:
         apply_influence(point, all_points)
     group_by_owner(points, all_points)
@@ -98,6 +98,18 @@ def part_one(input: list[str]):
                key=lambda tup: tup[1])
 
 
+def calculate_distance(ps: list[Point], cs: list[Point]):
+    return map(lambda c: (sum([p.distance(c) for p in ps]), c), cs)
+
+
+def part_two(input: list[str]):
+    points: PointDict = {p: set() for p in parse_points(input)}
+    all_points = generate_points(points)
+    calced_points = calculate_distance(list(points.keys()), all_points)
+    filtered_points = filter(lambda tup: tup[0] < 10000, calced_points)
+    print(len(list(filtered_points)))
+
+
 if __name__ == '__main__':
     file_name = 'input.txt'
     try:
@@ -105,7 +117,7 @@ if __name__ == '__main__':
         with open(file_name) as f:
             data = f.readlines()
 
-        result = part_one(data)
+        result = part_two(data)
         pprint(result)
     except FileNotFoundError:
         print(f'cannot find file {file_name}')
