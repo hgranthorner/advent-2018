@@ -17,6 +17,37 @@ class StepPair:
         return cls(matches[1], matches[2])
 
 
+class WorkerError(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+@dataclass
+class Worker:
+    busy: bool = False
+    time_left: int = 0
+    step: str = ''
+
+    def get_work(self, step):
+        if self.busy:
+            raise WorkerError
+
+        self.time_left = ord(step) - 4
+        self.busy = True
+        self.step = step
+
+    def work(self):
+        if not self.busy:
+            raise WorkerError
+
+        self.time_left -= 1
+        if self.time_left == 0:
+            self.busy = False
+            step = self.step
+            self.step = ''
+            return step
+
+
 def build_requirements(pairs: list[StepPair]) -> Requirements:
     reqs: Requirements = {
         s.second: {f.first for f in pairs if f.second == s.second}
@@ -58,6 +89,48 @@ def part_one(input: list[str]):
     pprint(execution_order)
 
 
+def parallel_execution(reqs: Requirements):
+    def not_working(ws): return filter(lambda w: not w.busy, ws)
+    def working(ws): return filter(lambda w: w.busy, ws)
+    def worked_on(step, ws): return len([w for w in ws if w.step == step]) > 0
+    completed_steps: set[str] = set()
+    available_steps = SortedSet()
+    num_keys = len(reqs.keys())
+    time = 0
+    workers = [Worker(), Worker(), Worker(), Worker(), Worker()]
+    while len(completed_steps) < num_keys:
+        for (step, req_set) in reqs.items():
+            if (req_set <= completed_steps
+                and step not in completed_steps
+                    and not worked_on(step, workers)):
+                available_steps.add(step)
+
+        for w in not_working(workers):
+            if len(available_steps) == 0:
+                continue
+            next_step = str(available_steps[0])
+            available_steps.remove(next_step)
+            w.get_work(next_step)
+        pprint(available_steps)
+        pprint(workers)
+
+        for w in working(workers):
+            result = w.work()
+            if result is not None:
+                completed_steps.add(result)
+
+        time += 1
+
+    return time
+
+
+def part_two(input: list[str]):
+    parsed = [StepPair.from_input_regex(
+        input_parse_regex.match(s)) for s in input]
+    reqs: Requirements = build_requirements(parsed)
+    print(parallel_execution(reqs))
+
+
 if __name__ == '__main__':
     file_name = 'input.txt'
 
@@ -66,6 +139,6 @@ if __name__ == '__main__':
         with open(file_name) as f:
             data = f.readlines()
 
-        part_one(data)
+        part_two(data)
     except FileNotFoundError:
         print(f'{file_name} not found')
