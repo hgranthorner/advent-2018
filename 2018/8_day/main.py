@@ -1,6 +1,24 @@
+from __future__ import annotations
+from dataclasses import dataclass
 
 
-def part_one(input: list[str]): pass
+class Node:
+    def __init__(self, num_children, num_metadata):
+        self.num_children = num_children
+        self.num_metadata = num_metadata
+        self.nodes = []
+
+    def add_node(node):
+        self.nodes.append(node)
+
+def parse_input(input: list[str]):
+    num_children = int(input[0])
+    num_metadata = int(input[1])
+    node = Node(num_children, num_metadata)
+
+
+def part_one(input: list[str]): 
+    print(input)
 
 
 if __name__ == '__main__':
